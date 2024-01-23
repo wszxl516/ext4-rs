@@ -1,11 +1,13 @@
 #![allow(dead_code)]
 use alloc::string::{String, ToString};
 use alloc::{format};
+use alloc::boxed::Box;
 use alloc::vec::Vec;
 use core::fmt::{Display, Formatter};
 
 use bitflags::{bitflags};
-use crate::io::{CoreRead, CoreSeek};
+use crate::ext4::Disk;
+use crate::io::{CoreRead};
 
 bitflags! {
     #[derive(Debug, Default, Copy, Clone)]
@@ -240,7 +242,7 @@ impl SuperBlock {
     pub const OFFSET: usize = Self::SIZE;
     pub const MAGIC: u16 = 0xef53;
 
-    pub fn new<Disk: CoreRead + CoreSeek>(f: &mut Disk) -> Option<Self>{
+    pub fn new(f: &mut Box<dyn Disk>) -> Option<Self>{
         f.seek_to(Self::OFFSET as u64);
         let sb = f.read_struct::<Self>().unwrap();
         match sb.is_valid() {
@@ -356,7 +358,7 @@ impl SuperBlock {
     pub fn backups(&self) -> [u32; 2]{
         self.backup_bgs
     }
-    pub fn find_backup<Disk: CoreRead + CoreSeek>(&self, f: &mut Disk) -> Vec<u64>{
+    pub fn find_backup(&self, f: &mut Box<dyn Disk>) -> Vec<u64>{
         let mut backup = Vec::new();
         for num in 0..self.get_groups_count(){
             if (num % 2).eq(&1) {

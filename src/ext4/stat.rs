@@ -102,7 +102,7 @@ impl Mode {
 }
 
 bitflags! {
-    #[derive(Debug, Copy, Clone)]
+    #[derive(Default,Debug, Copy, Clone)]
     pub struct IFlags: u32{
         /* Inode flags*/
         const Secrm		    =	0x00000001; /* Secure deletion */

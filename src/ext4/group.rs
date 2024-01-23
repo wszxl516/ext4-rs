@@ -1,5 +1,6 @@
-use crate::io::{CoreRead, CoreSeek};
-use crate::SuperBlock;
+use alloc::boxed::Box;
+use crate::io::{CoreRead};
+use crate::{Disk, SuperBlock};
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -36,8 +37,8 @@ pub struct Group<'a> {
 }
 impl<'a> Group<'a> {
     pub const DESC_SIZE: usize = core::mem::size_of::<GroupDesc>();
-    pub fn new<Disk: CoreRead + CoreSeek>(
-        f: &mut Disk,
+    pub fn new(
+        f: &mut Box<dyn Disk>,
         sb: &'a SuperBlock,
         group_num: u64,
     ) -> Option<Group<'a>> {
@@ -49,7 +50,7 @@ impl<'a> Group<'a> {
                 block_size
             };
         f.seek_to(offset);
-        let desc = f.read_struct::<GroupDesc>().ok()?;
+        let desc = f.read_struct::<GroupDesc>().unwrap();
         Some(Self { desc, sb, num: group_num })
     }
     pub fn first_block_num(&self) -> u64{
@@ -64,8 +65,7 @@ impl<'a> Group<'a> {
         self.desc.inode_table_lo as u64| (self.desc.inode_table_hi as u64) << 32
     }
 
-    pub fn get_group<Disk: CoreRead + CoreSeek>(f: &mut Disk, sb: &'a SuperBlock, inode_num: u64) -> Option<Group<'a>>{
-        assert!(inode_num < 10);
+    pub fn get_group(f: &mut Box<dyn Disk>, sb: &'a SuperBlock, inode_num: u64) -> Option<Group<'a>>{
         let group_num = (inode_num - 1) / sb.inodes_per_group();
         Self::new(f,sb ,group_num)
     }
