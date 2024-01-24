@@ -19,6 +19,15 @@ fn main() {
     let args = Args::parse();
     let disk = DiskFile::new(args.disk.as_str());
     let mut fs = FileSystem::new(Box::new(disk)).unwrap();
+    println!("{}", fs.info());
+    match fs.open("/") {
+        None => {}
+        Some(mut f) => {
+            for e in f.read_dir().unwrap() {
+                println!("{} {}", e.name(), e.mode())
+            }
+        }
+    }
     let file_name = "/test/test.bin";
     let f = fs.open(file_name);
     match f {

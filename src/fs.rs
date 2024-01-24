@@ -43,6 +43,9 @@ impl FileSystem {
         }
     }
     pub fn open(&mut self, path: &str) -> Option<Ext4File> {
+        if path == "/" {
+            return Some(Ext4File::new(self.root_inode(), path.to_string(), self))
+        }
         let path_parts = path.split("/").filter(|p| !p.is_empty()).collect::<Vec<&str>>();
         let mut current = self.root_inode();
         let mut current_entry= Default::default();

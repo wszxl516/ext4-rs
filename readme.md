@@ -2,7 +2,8 @@
 
 
 ## Features
-
+- read
+- readdir
 
 ## Toolchain
 - rust
